@@ -7,6 +7,9 @@ declare interface IMySitesWebPartStrings {
   BasicGroupName: string;
   TitleFieldLabel: string;
   ItemsPerPageLabel: string;
+  DebounceSearches: string;
+  SearchDebounceMinChars: string;
+  SearchDebounceDelayMs: string;
 }
 
 declare module 'MySitesWebPartStrings' {

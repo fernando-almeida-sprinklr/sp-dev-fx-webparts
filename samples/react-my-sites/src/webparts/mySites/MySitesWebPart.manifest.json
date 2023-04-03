@@ -13,20 +13,33 @@
   // Components that allow authors to embed arbitrary script code should set this to true.
   // https://support.office.com/en-us/article/Turn-scripting-capabilities-on-or-off-1f2c515f-5d7e-448a-9fd7-835da935584f
   "requiresCustomScript": false,
-  "supportedHosts": ["SharePointWebPart", "SharePointFullPage","TeamsPersonalApp","TeamsTab"],
+  "supportedHosts": [
+    "SharePointWebPart",
+    "SharePointFullPage",
+    "TeamsPersonalApp",
+    "TeamsTab"
+  ],
+  "supportsFullBleed": true,
 
-  "preconfiguredEntries": [{
-    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Other
-    "group": { "default": "Other" },
-    "title": { "default": "My Sites" },
-    "description": { "default": "List sites user has permissions, Include SharePoint Sites, Office365 Groups, OneDrive, Add-Ins App Sites" },
-    "officeFabricIconFontName": "SharepointLogo",
-    "properties": {
-      "title": "My Sites",
-      "itemsPerPage": 20,  
-      "enableFilterSharepointSites": true,
-      "enableFilterO365groups": true,
-      "enableFilterSitesWithSubWebs": true   
+  "preconfiguredEntries": [
+    {
+      "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Other
+      "group": { "default": "Other" },
+      "title": { "default": "My Sites" },
+      "description": {
+        "default": "List sites the user has permissions to access including SharePoint Sites, Office365 Groups, OneDrive, Add-Ins App Sites"
+      },
+      "officeFabricIconFontName": "SharepointLogo",
+      "properties": {
+        "title": "My Sites",
+        "itemsPerPage": 20,
+        "enableFilterSharepointSites": true,
+        "enableFilterO365groups": true,
+        "enableFilterSitesWithSubWebs": true,
+        "searchDebounce": true,
+        "searchDebounceDelayMs": 500,
+        "searchDebounceMinChars": 3
+      }
     }
-  }]
+  ]
 }

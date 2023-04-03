@@ -1,9 +1,10 @@
+import { IReadonlyTheme } from "@microsoft/sp-component-base";
+import { MSGraphClientV3 } from "@microsoft/sp-http";
+// import { ISearchResult } from "@pnp/sp/search";
 
-import { IReadonlyTheme } from '@microsoft/sp-component-base';
-import { MSGraphClient, AadTokenProvider } from "@microsoft/sp-http";
 export interface ISiteTileProps {
-  msGraphClient:MSGraphClient;
-  site:any;
+  msGraphClient: MSGraphClientV3;
+  site: any; /* ISearchResult;*/
   themeVariant: IReadonlyTheme | undefined;
-  locale:string;
+  locale: string;
 }

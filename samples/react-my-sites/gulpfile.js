@@ -19,7 +19,10 @@ gulp.task('dist', gulpSequence('clean', 'bundle', 'package-solution'));
 gulp.task('dev', gulpSequence('clean', 'bundle', 'package-solution'));
 
 
-
+/* fast-serve */
+const { addFastServe } = require("spfx-fast-serve-helpers");
+addFastServe(build);
+/* end of fast-serve */
 
 /**
  * Custom Framework Specific gulp tasks

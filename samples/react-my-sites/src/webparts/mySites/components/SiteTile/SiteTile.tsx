@@ -2,10 +2,8 @@ import * as React from "react";
 import { getUserPhoto } from "../../../../Utils/Utils";
 import { ISiteTileProps } from "./ISiteTileProps";
 import { ISiteTileState } from "./ISiteTileState";
-import { escape } from "@microsoft/sp-lodash-subset";
 import { ITitleData } from "../../../../Entities/ITitleData";
 import strings from "MySitesWebPartStrings";
-import styles from './SiteTile.module.scss';
 import { useUserSites } from '../../../../Hooks/useUserSites';
 import {
   mergeStyleSets,
@@ -15,28 +13,22 @@ import {
   DocumentCardDetails,
   DocumentCardActivity,
   ImageFit,
-  Label,
   Icon,
   IIconStyles,
   DocumentCard,
   DocumentCardType,
-  FontSizes,
   IDocumentCardActivityStyles,
-  IDocumentCardActivityStyleProps,
-  FontIcon,
   ImageIcon,
-  css,
-  TooltipHost,
-} from "office-ui-fabric-react";
+} from "@fluentui/react";
 
 
-const _siteLogoSP: string =
+const _siteLogoSP =
     "https://static2.sharepointonline.com/files/fabric-cdn-prod_20200430.002/assets/brand-icons/product/svg/sharepoint_48x1.svg";
 
-const _siteLogoOndrive: string =
+const _siteLogoOndrive =
     "https://static2.sharepointonline.com/files/fabric-cdn-prod_20200430.002/assets/brand-icons/product/svg/onedrive_48x1.svg";
 
-const _teamsLogo:string = "https://static2.sharepointonline.com/files/fabric-cdn-prod_20200430.002/assets/brand-icons/product/svg/teams_48x1.svg";
+const _teamsLogo = "https://static2.sharepointonline.com/files/fabric-cdn-prod_20200430.002/assets/brand-icons/product/svg/teams_48x1.svg";
 
 export const SiteTile: React.FunctionComponent<ISiteTileProps> = (
   props: ISiteTileProps
@@ -106,10 +98,10 @@ export const SiteTile: React.FunctionComponent<ISiteTileProps> = (
 
   };
 
-  let _activityUserEmail: string = "N/A";
-  let _activityUser: string = "N/A";
-  let _activityDate: string = "N/A";
-  let _activityMessage: string = "No Information";
+  let _activityUserEmail = "N/A";
+  let _activityUser = "N/A";
+  let _activityDate = "N/A";
+  let _activityMessage = "No Information";
   let _userPhoto: string = undefined;
 
   const {
@@ -157,7 +149,7 @@ export const SiteTile: React.FunctionComponent<ISiteTileProps> = (
       }
 
       // If is a group check if has a team
-      let _hasTeam:boolean = false;
+      let _hasTeam = false;
       if (GroupId){
         _hasTeam = await checkGroupHasTeam(GroupId, props.msGraphClient);
       }
@@ -177,10 +169,10 @@ export const SiteTile: React.FunctionComponent<ISiteTileProps> = (
 
   // destrectur TileData Activity
   const {
-    activityDate,
+    // activityDate,
+    // activityUserEmail,
     activityMessage,
     activityUser,
-    activityUserEmail,
     userPhoto,
   } = state.tileData;
 
@@ -205,7 +197,7 @@ export const SiteTile: React.FunctionComponent<ISiteTileProps> = (
                 imageFit: ImageFit.cover,
               },
             ]}
-          ></DocumentCardPreview>
+           />
         ) : (
           <DocumentCardPreview
             className={stylesTile.imageContainer}
@@ -218,11 +210,11 @@ export const SiteTile: React.FunctionComponent<ISiteTileProps> = (
                 imageFit: ImageFit.cover,
               },
             ]}
-          ></DocumentCardPreview>
+           />
         )}
         <DocumentCardDetails styles={DocumentCardDetailsStyles}>
           <div className={stylesTile.titleContainer}>
-            <DocumentCardTitle title={Title} shouldTruncate styles={{root:{flexGrow:2}}}></DocumentCardTitle>
+            <DocumentCardTitle title={Title} shouldTruncate styles={{root:{flexGrow:2}}} />
             {GroupId && hasTeam && (
               <ImageIcon
               title="Group has a Team"
@@ -239,14 +231,14 @@ export const SiteTile: React.FunctionComponent<ISiteTileProps> = (
                 styles={groupIconStyles}
                 iconName="Group"
                 title="Office 365 Group"
-              ></Icon>
+               />
             )}
             {IsHubSite == "true" && (
               <Icon
                 styles={groupIconStyles}
                 iconName="DrillExpand"
                 title="is Hub Site"
-              ></Icon>
+               />
             )}
            {/*  {WebTemplate == "SPSPERS" && (
               <Icon
@@ -260,7 +252,7 @@ export const SiteTile: React.FunctionComponent<ISiteTileProps> = (
                 styles={groupIconStyles}
                 iconName="SharepointAppIcon16"
                 title="SharePoint Site"
-              ></Icon>
+               />
             )}
           </div>
           <div title={activityMessage} >

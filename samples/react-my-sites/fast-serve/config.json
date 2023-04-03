@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/s-KaiNet/spfx-fast-serve/master/schema/config.1.0.schema.json",
+  "cli": {
+    "isLibraryComponent": false,
+    "usePnpm": false,
+    "useRestProxy": false
+  },
+  "serve": {
+    "openUrl": "https://sprinklr.sharepoint.com/sites/devSandbox/_layouts/15/workbench.aspx",
+    "fullScreenErrors": true
+  }
+}

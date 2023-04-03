@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Filters } from "../../../../Entities/EnumFilters";
 import "./paginationOverride.module.scss";
+import { debounce } from "lodash";
 import { IMySitesProps } from "./IMySitesProps";
-import { escape } from "@microsoft/sp-lodash-subset";
 import {
   mergeStyleSets,
   Customizer,
@@ -19,24 +19,23 @@ import {
   FontIcon,
   Label,
   ContextualMenuItemType,
-} from "office-ui-fabric-react";
+} from "@fluentui/react";
 import { WebPartTitle } from "@pnp/spfx-controls-react";
 import { useUserSites } from "../../../../Hooks/useUserSites";
 import { IMySitesState } from "./IMySitesState";
 import { SiteTile } from "../SiteTile/SiteTile";
 import { SearchResults } from "@pnp/sp/search";
 import { toInteger } from "lodash";
-import Pagination from "@material-ui/lab/Pagination";
 import strings from "MySitesWebPartStrings";
 import _ from "lodash";
-import { MSGraphClient } from "@microsoft/sp-http";
-
+import { Pagination } from "@mui/material";
+import { MSGraphClientV3 } from '@microsoft/sp-http-msgraph';
 let _searchResults: SearchResults = null;
-let _msGraphClient: MSGraphClient = undefined;
+let _msGraphClient: MSGraphClientV3 = undefined;
 let _filterMenuProps: IContextualMenuProps = undefined;
 
 // Get Hook functions
-const { getUserSites, getUserWebs, getUserGroups, getSiteProperties } = useUserSites();
+const { getUserSites, getUserWebs, getSiteProperties } = useUserSites();
 
 export const MySites: React.FunctionComponent<IMySitesProps> = (
   props: IMySitesProps
@@ -77,29 +76,28 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
 
   // get User Sites
   const _getUserSites = async (
-    searchString?: string,
+    searchValue?: string,
     currentFilter?: Filters,
-    currentFilterName?:string,
-    site?:string
+    currentFilterName?: string,
+    site?: string
   ) => {
     try {
       setState({ ...state, isLoading: true });
       const { itemsPerPage } = props;
       const searchResults = await getUserSites(
-        searchString,
+        searchValue,
         itemsPerPage,
         currentFilter,
         site
       );
       _searchResults = searchResults;
-      let _totalPages: number = searchResults.TotalRows / itemsPerPage;
-      const _modulus: number = searchResults.TotalRows % itemsPerPage;
+      let _totalPages = searchResults.TotalRows / itemsPerPage;
+      const _modulus = searchResults.TotalRows % itemsPerPage;
       _totalPages =
         _modulus > 0 ? toInteger(_totalPages) + 1 : toInteger(_totalPages);
 
       setState({
         ...state,
-        searchValue: "",
         currentPage: 1,
         totalPages: _totalPages,
         title: props.title,
@@ -107,9 +105,9 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
         hasError: false,
         errorMessage: "",
         sites: _searchResults.PrimarySearchResults,
-        currentFilter: currentFilter,
+        currentFilter,
         currentSelectedSite: site,
-        currentFilterName: currentFilterName,
+        currentFilterName,
         // tslint:disable-next-line: no-use-before-declare
         filterMenuProps: _filterMenuProps,
       });
@@ -124,23 +122,23 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
     }
   };
 
-  const _Filtersites = async (filter: string, site?:string) => {
+  const _FilterSites = async (filter: string, site?: string) => {
 
     switch (filter) {
       case "All":
-        await _getUserSites("", Filters.All, "All");
+        await _getUserSites(state.searchValue, Filters.All, "All");
         break;
       case "Groups":
-        await _getUserSites("", Filters.Group, "Groups");
+        await _getUserSites(state.searchValue, Filters.Group, "Groups");
         break;
-     /*  case "OneDrive":
-        await _getUserSites("", Filters.OneDrive, "OneDrive");
-        break; */
+      /*  case "OneDrive":
+         await _getUserSites(state.searchValue, Filters.OneDrive, "OneDrive");
+         break; */
       case "SharePoint":
-        await _getUserSites("", Filters.SharePoint, "SharePoint");
+        await _getUserSites(state.searchValue, Filters.SharePoint, "SharePoint");
         break;
       default:
-          await _getUserSites("", Filters.Site, filter, site);
+        await _getUserSites(state.searchValue, Filters.Site, filter, site);
     }
   };
 
@@ -148,18 +146,18 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
   // useEffect component did mount or modified
   React.useEffect(() => {
     (async () => {
-      _msGraphClient = await props.context.msGraphClientFactory.getClient();
-       
-      const _sitesWithSubSties = await getUserWebs();
-      
+      _msGraphClient = await props.context.msGraphClientFactory.getClient("3");
+
+      const _sitesWithSubSites = await getUserWebs();
+
       const _uniqweb = _.uniqBy(
-        _sitesWithSubSties.PrimarySearchResults,
+        _sitesWithSubSites.PrimarySearchResults,
         "ParentLink"
       );
-      
-     const {enableFilterO365groups, enableFilterSharepointSites, enableFilterSitesWithSubWebs } =  props;
 
-    _filterMenuProps = {
+      const { enableFilterO365groups, enableFilterSharepointSites, enableFilterSitesWithSubWebs } = props;
+
+      _filterMenuProps = {
         items: [
           {
             key: "0",
@@ -171,32 +169,32 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
                 | React.KeyboardEvent<HTMLElement>,
               item: IContextualMenuItem
             ) => {
-              _Filtersites(item.text);
+              _FilterSites(item.text);
             },
           },
         ],
       };
 
 
-      if( enableFilterSharepointSites )  {
-       
-          _filterMenuProps.items.push({
-            key: "1",
-            text: "SharePoint",
-            iconProps: { iconName: "SharepointAppIcon16" },
-            onClick: (
-              ev:
-                | React.MouseEvent<HTMLElement, MouseEvent>
-                | React.KeyboardEvent<HTMLElement>,
-              item: IContextualMenuItem
-            ) => {
-              _Filtersites(item.text);
-            }
-          }       
-          );
-       }
+      if (enableFilterSharepointSites) {
 
-       if(  enableFilterO365groups )  {    
+        _filterMenuProps.items.push({
+          key: "1",
+          text: "SharePoint",
+          iconProps: { iconName: "SharepointAppIcon16" },
+          onClick: (
+            ev:
+              | React.MouseEvent<HTMLElement, MouseEvent>
+              | React.KeyboardEvent<HTMLElement>,
+            item: IContextualMenuItem
+          ) => {
+            _FilterSites(item.text);
+          }
+        }
+        );
+      }
+
+      if (enableFilterO365groups) {
         _filterMenuProps.items.push({
           key: "2",
           text: "Groups",
@@ -207,13 +205,13 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
               | React.KeyboardEvent<HTMLElement>,
             item: IContextualMenuItem
           ) => {
-            _Filtersites(item.text);
+            _FilterSites(item.text);
           }
-        }       
+        }
         );
-     }
+      }
 
-      if (enableFilterSitesWithSubWebs &&  _sitesWithSubSties.PrimarySearchResults.length > 0){
+      if (enableFilterSitesWithSubWebs && _sitesWithSubSites.PrimarySearchResults.length > 0) {
         _filterMenuProps.items.push(
           {
             key: 'sites',
@@ -225,35 +223,27 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
           }
         );
 
-          // Add Site Collections with sub
-      for (const web of _uniqweb) {
-        // tslint:disable-next-line: no-use-before-declare
-        const _lastHasPosition: number = (web.ParentLink as string).lastIndexOf(
-          "/"
-        );
-        const _siteName: string = (web.ParentLink as string).substring(
-          _lastHasPosition + 1
-        );
+        // Add Site Collections with sub
+        for (const web of _uniqweb) {
+          const _webTitle = await getSiteProperties(web.ParentLink);
 
-        const _webTitle = await getSiteProperties(web.ParentLink);
-       
-        // tslint:disable-next-line: no-use-before-declare
-        _filterMenuProps.items.push({
-          key: web.ParentLink,
-          text: _webTitle,
-          iconProps: { iconName: "DrillExpand" },
-          onClick: (
-            ev:
-              | React.MouseEvent<HTMLElement, MouseEvent>
-              | React.KeyboardEvent<HTMLElement>,
-            item: IContextualMenuItem
-          ) => {
-            // tslint:disable-next-line: no-use-before-declare
-            _Filtersites(item.text, item.key);
-          },
-        });
+          // tslint:disable-next-line: no-use-before-declare
+          _filterMenuProps.items.push({
+            key: web.ParentLink,
+            text: _webTitle,
+            iconProps: { iconName: "DrillExpand" },
+            onClick: (
+              _:
+                | React.MouseEvent<HTMLElement, MouseEvent>
+                | React.KeyboardEvent<HTMLElement>,
+              item: IContextualMenuItem
+            ) => {
+              // tslint:disable-next-line: no-use-before-declare
+              _FilterSites(item.text, item.key);
+            },
+          });
+        }
       }
-      }   
 
       await _getUserSites("", state.currentFilter, state.currentFilterName);
     })();
@@ -261,12 +251,25 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
 
   // On Search Sites
   const _onSearch = async (value: string) => {
-    await _getUserSites(value, state.currentFilter,state.currentFilterName, state.currentSelectedSite);
+    await _getUserSites(value, state.currentFilter, state.currentFilterName, state.currentSelectedSite);
   };
 
+  const searchWithDebounce = debounce(_onSearch, props.searchSettings.debounceDelayMs);
+
+  const _onChange = props.searchSettings?.debounce
+    ? (_: React.ChangeEvent<HTMLInputElement>, newValue?: string) => {
+      if (newValue?.length < props.searchSettings.debounceMinChars) {
+        return;
+      }
+      // eslint-disable-next-line no-debugger
+      searchWithDebounce.cancel();
+      searchWithDebounce(newValue);
+    }
+    : undefined;
+
   // On Search Sites
-  const _onClear = async (ev: any) => {
-    await _getUserSites("", state.currentFilter,state.currentFilterName, state.currentSelectedSite);
+  const _onClear = async (searchValue?: string) => {
+    await _getUserSites(searchValue || '', state.currentFilter, state.currentFilterName, state.currentSelectedSite);
   };
 
   // Render component
@@ -290,50 +293,52 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
           updateProperty={props.updateProperty}
           className={stylesComponent.webPartTile}
         />
-        <Stack horizontal verticalAlign="center" horizontalAlign='start' styles={{root:{width: '100%'}}}>
-        <SearchBox
-            placeholder="Search my sites"
-            styles={{root:{width:'100%', marginBottom: 10}}}
-            value={state.searchValue}
-            onSearch={_onSearch}
-            onClear={_onClear}
-          />
-        </Stack>
-        <Stack horizontal verticalAlign="center" horizontalAlign="end" wrap tokens={{ childrenGap: 5 }}>
-         
-          <CommandButton
-            iconProps={{ iconName: "refresh" }}
-            onClick={_onClear}
-            title={strings.RefreshLabel}
-          />
-          <CommandButton
-            iconProps={filterIcon}
-            text={state.currentFilterName}
-            menuProps={state.filterMenuProps}
-            disabled={false}
-            checked={true}
-            title="filter"
-          />
+        <Stack horizontal verticalAlign="center" horizontalAlign='start' wrap tokens={{ childrenGap: 5 }} styles={{ root: { width: '100%' } }}>
+          <Stack.Item grow align="stretch">
+            <SearchBox
+              placeholder="Search my sites"
+              styles={{ root: { width: '100%', marginBottom: 10 } }}
+              onChange={_onChange}
+              onSearch={_onSearch}
+              onClear={() => _onClear()}
+            />
+          </Stack.Item>
+          <Stack.Item>
+            <CommandButton
+              iconProps={{ iconName: "refresh" }}
+              onClick={() => _onClear(state.searchValue)}
+              title={strings.RefreshLabel}
+            />
+            <CommandButton
+              iconProps={filterIcon}
+              text={state.currentFilterName}
+              menuProps={state.filterMenuProps}
+              disabled={false}
+              checked={true}
+              title="filter"
+            />
+          </Stack.Item>
         </Stack>
         {state.isLoading ? (
           <Spinner
             size={SpinnerSize.medium}
             label={strings.LoadingLabel}
-          ></Spinner>
+          />
         ) : (
           <>
             {
               // has sites ?
               state.sites.length > 0 ? (
                 <div className={stylesComponent.containerTiles}>
-                  {state.sites.map((site: any, i: number) => {
+                  {state.sites.map((site) => {
                     return (
                       <SiteTile
+                        key={site.id}
                         site={site}
                         msGraphClient={_msGraphClient}
                         themeVariant={props.themeVariant}
                         locale={props.context.pageContext.cultureInfo.currentCultureName}
-                      ></SiteTile>
+                      />
                     );
                   })}
                 </div>
@@ -349,7 +354,7 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
                     <FontIcon
                       iconName="Tiles"
                       style={{ fontSize: 48 }}
-                    ></FontIcon>
+                    />
                     <Label styles={{ root: { fontSize: 26 } }}>
                       No Sites Found{" "}
                     </Label>
@@ -373,7 +378,7 @@ export const MySites: React.FunctionComponent<IMySitesProps> = (
                     page={state.currentPage}
                     size="small"
                     siblingCount={0}
-                    onChange={async (event: any, page: number) => {
+                    onChange={async (_, page: number) => {
                       const rs = await _searchResults.getPage(page);
                       _searchResults = rs;
                       setState({

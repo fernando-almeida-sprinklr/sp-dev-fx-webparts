@@ -2,6 +2,13 @@ import { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import { DisplayMode } from "@microsoft/sp-core-library";
 import { IPropertyFieldSite } from '@pnp/spfx-property-controls/lib/PropertyFieldSitePicker';
+
+export interface ISearchSettings {
+  debounce: boolean;
+  debounceDelayMs: number;
+  debounceMinChars: number;
+}
+
 export interface IMySitesProps {
   title: string;
   context: WebPartContext;
@@ -13,5 +20,6 @@ export interface IMySitesProps {
   enableFilterSharepointSites:boolean;
   enableFilterO365groups: boolean;
   enableFilterSitesWithSubWebs: boolean;
+  searchSettings: ISearchSettings;
 }
 

@@ -7,6 +7,9 @@ define([], function() {
     "PropertyPaneDescription": "List sites user has permissions, Include SharePoint Sites, Office365 Groups, Add-Ins App Sites",
     "BasicGroupName": "Properties",
     "TitleFieldLabel": "Title",
-    "ItemsPerPageLabel": "Number items per page"
+    "ItemsPerPageLabel": "Number items per page",
+    "DebounceSearches": "Debounce searches",
+    "SearchDebounceDelayMs": "Debounce search delay ms",
+    "SearchDebounceMinChars": "Debounce search minimum characters",
   }
 });
